@@ -1,4 +1,10 @@
-(ns com.ncpenterprises.clomosy.modules.oscillator)
+(ns com.ncpenterprises.clomosy.modules.oscillator
+  (:require [com.ncpenterprises.clomosy.oscillators :as osc])
+  )
+
+(defn inc-phase [phase frequency dt]
+  (rem (+ (* frequency dt 2 Math/PI) phase) (* 2 Math/PI))
+  )
 
 (defn sine-wave [id]
   {
@@ -11,17 +17,19 @@
 
    :outputs {
              :phase   (fn [state midi-frame inputs dt]
-                        (rem (+ (* (:frequency inputs) dt 2 Math/PI) (:phase inputs) ) (* 2 Math/PI)))
+                        (inc-phase (:phase inputs) (:frequency inputs) dt))
              :amplitude (fn [state midi-frame inputs dt]
-                          (rem (+ (* (:frequency inputs) dt 2 Math/PI) (:phase inputs) ) (* 2 Math/PI)))
+                          (osc/sine-wave (:phase inputs)))
              }
 
    :state   {
-             :notes-on ()
              }
 
 
    :update (fn [state midi-frame inputs dt]
-             nil)
+             {})
    }
   )
+
+
+

@@ -111,8 +111,7 @@
           buffer-size (/ (.getBufferSize line) 1)
           iterations 80000
           ]
-      (loop [;buffer []
-             n 0
+      (loop [n 0
              freq 80
              midi-module (midi-mod/monophonic-keyboard :keyboard)
              output-module (audio-mod/mono-output :output line buffer-size)
@@ -144,12 +143,16 @@
                                  (assoc midi-module :state
                                                     ((:update midi-module) (:state midi-module) midi-frame {} dt))
                                  (assoc output-module :state
-                                                      ((:update output-module) (:state output-module) midi-frame {:audio amplitude} dt))
+                                                      ((:update output-module)
+                                                        (:state output-module)
+                                                        midi-frame
+                                                        {:audio amplitude}
+                                                        dt))
                                  (assoc osc-module :state
                                                    ((:update osc-module) (:state osc-module) midi-frame {} dt))
                                  (async/poll! midi-queue)
-                                 (rem (* n freq dt 2 Math/PI) (* 2 Math/PI))
-                                 (* 100 (osc/sine-wave phase)
+                                 ((:phase (:outputs osc-module)) (:state osc-module) midi-frame {:phase phase :frequency freq} dt)
+                                 (* ((:amplitude (:outputs osc-module)) (:state osc-module) midi-frame {:phase phase :frequency freq} dt)
                                               (if (== 0
                                                       ((:gate (:outputs midi-module))
                                                         (:state midi-module)
