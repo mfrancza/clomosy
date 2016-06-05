@@ -11,8 +11,8 @@
 
    :id id
 
-   :inputs {
-
+   :inputs #{
+            :phase
             }
 
    :outputs {

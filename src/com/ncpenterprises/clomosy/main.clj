@@ -5,7 +5,7 @@
             [com.ncpenterprises.clomosy.modules.audio :as audio-mod]
             [com.ncpenterprises.clomosy.modules.midi :as midi-mod]
             [com.ncpenterprises.clomosy.modules.oscillator :as osc-mod]
-            [com.ncpenterprises.clomosy.oscillators :as osc]
+            [com.ncpenterprises.clomosy.modules.amplification :as amp-mod]
             )
   (:import (javax.sound.sampled AudioFormat SourceDataLine)))
 
@@ -116,6 +116,7 @@
              midi-module (midi-mod/monophonic-keyboard :keyboard)
              output-module (audio-mod/mono-output :output line buffer-size)
              osc-module (osc-mod/sine-wave :oscillator)
+             amp-module (amp-mod/linear-amplifier :amp)
              midi-frame (async/poll! midi-queue)
              phase 0
              amplitude 0
@@ -150,20 +151,27 @@
                                                         dt))
                                  (assoc osc-module :state
                                                    ((:update osc-module) (:state osc-module) midi-frame {} dt))
+                                 (assoc amp-module :state
+                                                   ((:update amp-module) (:state amp-module) midi-frame {} dt))
                                  (async/poll! midi-queue)
                                  ((:phase (:outputs osc-module)) (:state osc-module) midi-frame {:phase phase :frequency freq} dt)
-                                 (* ((:amplitude (:outputs osc-module)) (:state osc-module) midi-frame {:phase phase :frequency freq} dt)
-                                              (if (== 0
-                                                      ((:gate (:outputs midi-module))
-                                                        (:state midi-module)
-                                                        midi-frame
-                                                        {}
-                                                        dt
-                                                        )
-                                                      )
-                                                0 1)
-                                              )
-
+                                 ((:out (:outputs amp-module))
+                                   ()
+                                   midi-frame
+                                   {
+                                    :in ((:amplitude (:outputs osc-module))
+                                          (:state osc-module)
+                                          midi-frame
+                                          {:phase phase :frequency freq}
+                                          dt)
+                                    :gain ((:gate (:outputs midi-module))
+                                            (:state midi-module)
+                                            midi-frame
+                                            {}
+                                            dt
+                                            )
+                                    }
+                                   dt)
                                  )
                                )
           )
