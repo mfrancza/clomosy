@@ -11,11 +11,13 @@
 
      :id id
 
+     :inputs {}
+
      :outputs {
                :gate    (fn [state midi-frame inputs dt]
                           (if (empty? (:notes-on state)) 0 1))
                :note    (fn [state midi-frame inputs dt]
-                          (first (:notes-on state)))
+                          (if (nil? (first (:notes-on state))) 0 (first (:notes-on state))))
                :trigger (fn [state midi-frame inputs dt]
                           (not (nil? midi-frame)))
                }

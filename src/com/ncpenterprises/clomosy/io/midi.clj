@@ -72,9 +72,9 @@
 (defn queue-receiver [queue]
   (reify Receiver
     (send [this message time-stamp]
-      (println "waiting to send")
+      ;(println "waiting to send")
       (async/>!! queue message)
-      (println "done sending")
+      ;(println "done sending")
       )
 
     )
@@ -89,7 +89,7 @@
   )
 
 (defmethod apply-message ShortMessage [midi-state message]
-  (println midi-state)
+  ;(println midi-state)
   (if (= ShortMessage/NOTE_ON (.getCommand message))
     (assoc midi-state :notes-on (conj (:notes-on midi-state) (.getData1 message)))
     (if (= ShortMessage/NOTE_OFF (.getCommand message))

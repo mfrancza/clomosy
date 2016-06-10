@@ -12,7 +12,7 @@
    :id id
 
    :inputs #{
-            :phase
+            :phase :frequency
             }
 
    :outputs {

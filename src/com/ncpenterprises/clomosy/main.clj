@@ -6,90 +6,38 @@
             [com.ncpenterprises.clomosy.modules.midi :as midi-mod]
             [com.ncpenterprises.clomosy.modules.oscillator :as osc-mod]
             [com.ncpenterprises.clomosy.modules.amplification :as amp-mod]
+            [com.ncpenterprises.clomosy.modules.intonation :as int-mod]
+            [com.ncpenterprises.clomosy.modules.memory :as mem-mod]
             )
   (:import (javax.sound.sampled AudioFormat SourceDataLine)))
 
-(defn test-midi-module [waveform]
-  (let [line (io/getOutputLine 44100 8 1)
-        _ (println line)
-        midi-queue (async/chan 100)
-        _ (println midi-queue)
-        midi-in (midi/getTransmitter)
-        _ (println midi-in)
-        ]
-    (println line)
-    (.open ^SourceDataLine line (AudioFormat. 44100 8 1 true true) 4410)
-    (println (.getFormat line))
-    (.start line)
-    (.setReceiver midi-in (midi/queue-receiver midi-queue))
-    (println (.getBufferSize line))
-    (let [dt (/ 1 44100)
-          buffer-size (/ (.getBufferSize line) 1)
-          iterations 80000
-          ]
-      (loop [;buffer []
-             n 0
-             freq 80
-             midi-module (midi-mod/monophonic-keyboard :keyboard)
-             output-module (audio-mod/mono-output :output line buffer-size)
-             ]
 
+(defn update-module [module midi-frame inputs dt]
+  (assoc module :state
+                ((:update module)
+                  (:state module)
+                  midi-frame
+                  inputs
+                  dt))
+  )
 
-        (let [midi-frame (async/poll! midi-queue)
-              phase (rem (* n freq dt 2 Math/PI) (* 2 Math/PI))
-              amplitude (* 100 (waveform phase)
-                           (if (== 0
-                                   ((:gate (:outputs midi-module))
-                                     (:state midi-module)
-                                     midi-frame
-                                     {}
-                                     dt
-                                     )
-                                   )
-                             0 1)
-                           )
-              ]
+(defn get-outputs [module midi-frame inputs dt]
+  (reduce
+    (fn [outputs key]
+      (assoc outputs [(:id module) key] ((get (:outputs module) key) (:state module) midi-frame inputs dt)))
+    {}
+    (keys (:outputs module)))
+  )
 
+(defn get-inputs [module patches outputs]
+  (reduce
+    (fn [inputs key]
+      ;(println patches)
+      ;(println [(:id module) key])
 
-          (if (< n iterations) (recur
-                                 ;(io/output-frame line buffer buffer-size amplitude)
-                                 (inc n)
-                                 (if-not (empty? (:notes-on (:state midi-module)))
-                                   (* 440
-                                      (Math/pow 2
-                                                (/ (-
-                                                     ((:note (:outputs midi-module))
-                                                       (:state midi-module)
-                                                       midi-frame
-                                                       {}
-                                                       dt
-                                                       )
-                                                     69)
-                                                   12)))
-                                   freq
-                                   )
-                                 (assoc midi-module :state
-                                                    ((:update midi-module) (:state midi-module) midi-frame {} dt))
-                                 (assoc output-module :state
-                                                      ((:update output-module) (:state output-module) midi-frame {:audio amplitude} dt))
-                                 )
-
-                               )
-          )
-        )
-      )
-    (println "draining line")
-    (.drain line)
-    (println "closing line")
-    (.close line)
-    (println "closing midi-queue")
-    (async/poll! midi-queue)
-    (async/close! midi-queue)
-    (println "closing midi-in")
-    (.close midi-in)
-    ;(println "closing receiver")
-    ;(.close (.getReceiver midi-in))
-
+      (assoc inputs key (get outputs (get patches [(:id module) key]))))
+    {}
+    (:inputs module)
     )
   )
 
@@ -109,72 +57,75 @@
     (println (.getBufferSize line))
     (let [dt (/ 1 44100)
           buffer-size (/ (.getBufferSize line) 1)
-          iterations 80000
+          iterations 400000
           ]
       (loop [n 0
-             freq 80
              midi-module (midi-mod/monophonic-keyboard :keyboard)
-             output-module (audio-mod/mono-output :output line buffer-size)
+             intonation-module (int-mod/twelve-tone-equal-temperment :intonation)
              osc-module (osc-mod/sine-wave :oscillator)
+             memory-module (mem-mod :phase)
              amp-module (amp-mod/linear-amplifier :amp)
+             output-module (audio-mod/mono-output :output line buffer-size)
              midi-frame (async/poll! midi-queue)
              phase 0
-             amplitude 0
+             patches {
+                      [:intonation :note] [:keyboard :note]
+                      [:oscillator :frequency] [:intonation :frequency]
+                      [:oscillator :phase] [:phase :phase]
+                      [:amp :in] [:oscillator :amplitude]
+                      [:amp :gain] [:keyboard :gate]
+                      [:output :audio] [:amp :out]
+                      }
              ]
+        (let [
+              outputs {}
+              inputs (get-inputs midi-module patches outputs)
+              midi-module (update-module midi-module midi-frame inputs dt)
+              outputs (merge outputs (get-outputs midi-module midi-frame inputs dt))
+              ;_ (println outputs)
 
+              inputs (get-inputs intonation-module patches outputs)
+              ;_ (println inputs)
+              intonation-module (update-module intonation-module midi-frame inputs dt)
+              outputs (merge outputs (get-outputs intonation-module midi-frame inputs dt))
 
+              inputs (get-inputs memory-module patches outputs)
+              outputs (merge outputs (get-outputs memory-module midi-frame inputs dt))
 
+              ;_ (println outputs)
+              inputs (get-inputs osc-module patches outputs)
+              inputs (assoc inputs :phase phase)
+              ;_ (println inputs)
+              osc-module (update-module osc-module midi-frame inputs dt)
+              outputs (merge outputs (get-outputs osc-module midi-frame inputs dt))
+
+              inputs (get-inputs amp-module patches outputs)
+              ;inputs (assoc inputs :phase phase)
+              ;_ (println inputs)
+              amp-module (update-module amp-module midi-frame inputs dt)
+              outputs (merge outputs (get-outputs amp-module midi-frame inputs dt))
+
+              inputs (get-inputs amp-module patches outputs)
+              ;inputs (assoc inputs :phase phase)
+              ;_ (println inputs)
+              amp-module (update-module amp-module midi-frame inputs dt)
+              outputs (merge outputs (get-outputs amp-module midi-frame inputs dt))
+              ]
           (if (< n iterations) (recur
                                  ;(io/output-frame line buffer buffer-size amplitude)
                                  (inc n)
-                                 (if-not (empty? (:notes-on (:state midi-module)))
-                                   (* 440
-                                      (Math/pow 2
-                                                (/ (-
-                                                     ((:note (:outputs midi-module))
-                                                       (:state midi-module)
-                                                       midi-frame
-                                                       {}
-                                                       dt
-                                                       )
-                                                     69)
-                                                   12)))
-                                   freq
-                                   )
-                                 (assoc midi-module :state
-                                                    ((:update midi-module) (:state midi-module) midi-frame {} dt))
-                                 (assoc output-module :state
-                                                      ((:update output-module)
-                                                        (:state output-module)
-                                                        midi-frame
-                                                        {:audio amplitude}
-                                                        dt))
-                                 (assoc osc-module :state
-                                                   ((:update osc-module) (:state osc-module) midi-frame {} dt))
-                                 (assoc amp-module :state
-                                                   ((:update amp-module) (:state amp-module) midi-frame {} dt))
+                                 midi-module
+                                 intonation-module
+                                 osc-module
+                                 amp-module
+                                 output-module
                                  (async/poll! midi-queue)
                                  ((:phase (:outputs osc-module)) (:state osc-module) midi-frame {:phase phase :frequency freq} dt)
-                                 ((:out (:outputs amp-module))
-                                   ()
-                                   midi-frame
-                                   {
-                                    :in ((:amplitude (:outputs osc-module))
-                                          (:state osc-module)
-                                          midi-frame
-                                          {:phase phase :frequency freq}
-                                          dt)
-                                    :gain ((:gate (:outputs midi-module))
-                                            (:state midi-module)
-                                            midi-frame
-                                            {}
-                                            dt
-                                            )
-                                    }
-                                   dt)
+                                 patches
                                  )
                                )
           )
+        )
         )
     (println "draining line")
     (.drain line)
@@ -190,3 +141,4 @@
 
     )
   )
+
