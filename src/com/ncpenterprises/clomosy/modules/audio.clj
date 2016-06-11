@@ -23,7 +23,7 @@
                                     (:line state)
                                     (:buffer state)
                                     (:buffer-size state)
-                                    (* 127 (:audio inputs))
+                                    (* 126.0 (:audio inputs))
                                     )
 
                           )

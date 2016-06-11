@@ -5,14 +5,12 @@
 
    :id id
 
-   :inputs {
+   :inputs #{
             :in
             }
 
-            }
-
    :outputs {
-             :out   (fn [state midi-frame inputs dt]
+             :out (fn [state midi-frame inputs dt]
                         (:value state))
              }
 
@@ -20,8 +18,12 @@
              :value initial-value
              }
 
+   :update (fn [state midi-frame inputs dt] state
+             )
 
-   :update (fn [state midi-frame inputs dt]
-             (assoc state :value (:in inputs))
+   :update-after (fn [state midi-frame inputs dt]
+             (assoc state :value (:in inputs)))
    }
   )
+
+

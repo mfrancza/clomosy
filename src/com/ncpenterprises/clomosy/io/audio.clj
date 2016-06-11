@@ -7,13 +7,19 @@
                                        ))
   )
 
+(defn write-buffer [^SourceDataLine line buffer buffer-size]
+  (.write line (byte-array buffer) 0 buffer-size)
+  )
+
+
     (defn output-frame [^SourceDataLine line buffer buffer-size frame]
-      ;(println line)
+
       (if (< (count buffer) buffer-size)
         (conj buffer frame)
-        (let [_ (.write line (byte-array buffer) 0 buffer-size)]
+        (let [_ (write-buffer line buffer buffer-size)]
           (vector frame)
           ))
       )
+
 
 
