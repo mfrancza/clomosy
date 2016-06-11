@@ -4,11 +4,11 @@
   (:import (javax.sound.sampled AudioSystem DataLine$Info AudioFormat SourceDataLine)))
 
 
-(defn squareWave [phase]
-  (if (< phase (Math/PI)) 1 -1)
+(defn pulse-wave [phase duty-cycle]
+  (if (< phase (* 2 Math/PI duty-cycle)) 1 -1)
   )
 
-(defn triangleWave [phase]
+(defn triangle-wave [phase]
   (let [ratio (/ phase 2 Math/PI)]
     (if (< ratio 0.5)
       (if (< ratio 0.25)
@@ -20,11 +20,6 @@
         )
       )
     )
-  )
-
-
-(defn sineWave [phase]
-  (Math/sin phase)
   )
 
 (defn sine-wave [phase]
