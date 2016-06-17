@@ -2,7 +2,23 @@
 
 
 (defprotocol module
-  (inputs [])
-  (state [])
+  (inputs []
+    )
+
+  (initial-state [])
 
   )
+
+(defprotocol update
+  (inputs [])
+  (update-state [system-state module-state &inputs])
+  )
+
+(defprotocol output
+  (inputs [])
+  (update-state [system-state module-state &inputs])
+  )
+
+
+
+

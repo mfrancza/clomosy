@@ -12,12 +12,5 @@
              :value (fn [state midi-frame inputs dt]
                       value)
              }
-
-   :state   {
-             }
-
-
-   :update (fn [state midi-frame inputs dt]
-             {})
    }
   )

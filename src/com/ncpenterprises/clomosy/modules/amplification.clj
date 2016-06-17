@@ -1,5 +1,7 @@
 (ns com.ncpenterprises.clomosy.modules.amplification)
 
+(defn out [state midi-frame inputs dt]
+  (* (:in inputs) (:gain inputs)))
 
 (defn linear-amplifier [id]
   {
@@ -12,15 +14,8 @@
             }
 
    :outputs {
-             :out   (fn [state midi-frame inputs dt]
-                        (* (:in inputs) (:gain inputs)))
+             :out out
              }
 
-   :state   {
-             }
-
-
-   :update (fn [state midi-frame inputs dt]
-             {})
    }
   )

@@ -6,6 +6,12 @@
   (rem (+ (* frequency dt 2 Math/PI) phase) (* 2 Math/PI))
   )
 
+(defn phase [state midi-frame inputs dt]
+  (inc-phase (:phase inputs) (:frequency inputs) dt))
+
+(defn sine-amplitude [state midi-frame inputs dt]
+  (osc/sine-wave (:phase inputs)))
+
 (defn sine-wave [id]
   {
 
@@ -16,20 +22,14 @@
             }
 
    :outputs {
-             :phase   (fn [state midi-frame inputs dt]
-                        (inc-phase (:phase inputs) (:frequency inputs) dt))
-             :amplitude (fn [state midi-frame inputs dt]
-                          (osc/sine-wave (:phase inputs)))
+             :phase phase
+             :amplitude sine-amplitude
              }
-
-   :state   {
-             }
-
-
-   :update (fn [state midi-frame inputs dt]
-             {})
    }
   )
+
+(defn triangle-amplitude [state midi-frame inputs dt]
+  (osc/triangle-wave (:phase inputs)))
 
 (defn triangle-wave [id]
   {
@@ -41,20 +41,15 @@
              }
 
    :outputs {
-             :phase   (fn [state midi-frame inputs dt]
-                        (inc-phase (:phase inputs) (:frequency inputs) dt))
-             :amplitude (fn [state midi-frame inputs dt]
-                          (osc/triangle-wave (:phase inputs)))
+             :phase   phase
+             :amplitude triangle-amplitude
              }
 
-   :state   {
-             }
-
-
-   :update (fn [state midi-frame inputs dt]
-             {})
    }
   )
+
+(defn pulse-amplitude [state midi-frame inputs dt]
+  (osc/pulse-wave (:phase inputs) (:duty-cycle inputs)))
 
 (defn pulse-wave [id]
   {
@@ -68,18 +63,9 @@
              }
 
    :outputs {
-             :phase   (fn [state midi-frame inputs dt]
-                        (inc-phase (:phase inputs) (:frequency inputs) dt))
-             :amplitude (fn [state midi-frame inputs dt]
-                          (osc/pulse-wave (:phase inputs) (:duty-cycle inputs)))
+             :phase   phase
+             :amplitude pulse-amplitude
              }
-
-   :state   {
-             }
-
-
-   :update (fn [state midi-frame inputs dt]
-             {})
    }
   )
 

@@ -1,5 +1,8 @@
 (ns com.ncpenterprises.clomosy.modules.mixer)
 
+(defn output [state midi-frame inputs dt]
+  (+ (:input_1 inputs) (:input_2 inputs)))
+
 (defn mixer [id]
   {
 
@@ -11,15 +14,7 @@
              }
 
    :outputs {
-             :output   (fn [state midi-frame inputs dt]
-                         (+ (:input_1 inputs) (:input_2 inputs)))
+             :output
              }
-
-   :state   {
-             }
-
-
-   :update (fn [state midi-frame inputs dt]
-             {})
    }
   )

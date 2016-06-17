@@ -1,5 +1,11 @@
 (ns com.ncpenterprises.clomosy.modules.memory)
 
+(defn out [state midi-frame inputs dt]
+  (:value state))
+
+(defn update-state-after [state midi-frame inputs dt]
+  (assoc state :value (:in inputs)))
+
 (defn memory-cell [id initial-value]
   {
 
@@ -10,19 +16,14 @@
             }
 
    :outputs {
-             :out (fn [state midi-frame inputs dt]
-                        (:value state))
+             :out out
              }
 
    :state   {
              :value initial-value
              }
 
-   :update (fn [state midi-frame inputs dt] state
-             )
-
-   :update-after (fn [state midi-frame inputs dt]
-             (assoc state :value (:in inputs)))
+   :update-after update-state-after
    }
   )
 

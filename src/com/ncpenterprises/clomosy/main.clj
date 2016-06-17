@@ -14,12 +14,16 @@
 
 
 (defn update-module [module midi-frame inputs dt]
-  (assoc module :state
+  (if (nil? (:update module))
+    module
+    (assoc module :state
                 ((:update module)
                   (:state module)
                   midi-frame
                   inputs
                   dt))
+    )
+
   )
 
 (defn update-module-after [module midi-frame inputs dt]
@@ -297,6 +301,100 @@
   )
 
 (defn test-synth [synth-def sample_rate]
+  (let [line (io/getOutputLine sample_rate 8 1)
+        _ (println line)
+        midi-queue (async/chan 100)
+        _ (println midi-queue)
+        midi-in (midi/getTransmitter)
+        _ (println midi-in)
+        ]
+    (println line)
+    (.open ^SourceDataLine line (AudioFormat. sample_rate 8 1 true true) (/ sample_rate 10))
+    (println (.getFormat line))
+    (.start line)
+    (.setReceiver midi-in (midi/queue-receiver midi-queue))
+    (println (.getBufferSize line))
+    (let [dt  (/ 1.0 sample_rate)
+          buffer-size (/ (.getBufferSize line) 10)
+          iterations (* 5 sample_rate)
+          synth (synth-def line buffer-size)
+          ]
+
+
+      (loop [n 0
+             state {:modules (:modules synth)
+                    :outputs {}
+                    }
+             order  (:order synth)
+             midi-frame (async/poll! midi-queue)
+             patches (:patches synth)
+             ]
+
+        (let [;_ (println order)
+              state (reduce (fn [state module_id]
+                              (let [
+                                    modules (:modules state)
+                                    module (module_id (:modules state))
+                                    inputs (get-inputs module patches (:outputs state))
+                                    ;_ (println module_id)
+                                    ;_ (println modules)
+                                    module (update-module module midi-frame inputs dt)
+                                    ;_ (println (:outputs state))
+                                    ;_ (println inputs)
+                                    outputs (get-outputs (:outputs state) module midi-frame inputs dt)
+                                    modules (assoc (:modules state) module_id module)
+                                    ]
+                                (-> state
+                                    (assoc :modules modules)
+                                    (assoc :outputs outputs)
+                                    )
+                                ))
+                            state
+                            order
+                            )
+              state (reduce (fn [state module_id]
+                              (let [module (module_id (:modules state))
+                                    inputs (get-inputs module patches (:outputs state))
+                                    module (update-module-after module midi-frame inputs dt)
+                                    modules (assoc (:modules state) module_id module)
+                                    ]
+                                (assoc state :modules modules)
+                                )
+                              )
+                            state
+                            order
+                            )
+              ]
+          ;(if (> (- (System/nanoTime) start-time ) (* dt 1E9))
+          ;  (println (- (System/nanoTime) start-time ) (* dt 1E9))
+          ;  )
+          (if (< n iterations) (recur
+                                 (inc n)
+                                 state
+                                 order
+                                 (async/poll! midi-queue)
+                                 patches
+                                 )
+                               )
+          )
+        )
+      )
+    (println "draining line")
+    (.drain line)
+    (println "closing line")
+    (.close line)
+    (println "closing midi-queue")
+    (async/poll! midi-queue)
+    (async/close! midi-queue)
+    (println "closing midi-in")
+    (.close midi-in)
+    ;(println "closing receiver")
+    ;(.close (.getReceiver midi-in))
+
+    )
+  )
+
+(defn test-protocol [synth-def sample_rate]
   (let [line (io/getOutputLine sample_rate 8 1)
         _ (println line)
         midi-queue (async/chan 100)
