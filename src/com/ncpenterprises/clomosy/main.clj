@@ -317,7 +317,7 @@
     (let [dt  (/ 1.0 sample_rate)
           buffer-size (/ (.getBufferSize line) 10)
           iterations (* 5 sample_rate)
-          synth (synth-def line buffer-size)
+          synth (synth-def line buffer-size dt)
           ]
 
 

@@ -8,7 +8,7 @@
             [com.ncpenterprises.clomosy.main :as main]
             [com.ncpenterprises.clomosy.modules.constant :as const-mod]))
 
-(defn simple-triange [line buffer-size]
+(defn simple-triange [line buffer-size dt]
   {
    :modules (-> {}
                 (main/add-module (midi-mod/monophonic-keyboard :keyboard))
@@ -38,8 +38,43 @@
    }
   )
 
+(defn delay-line-triange [line buffer-size dt]
+  {
+   :modules (-> {}
+                (main/add-module (midi-mod/monophonic-keyboard :keyboard))
+                (main/add-module (int-mod/twelve-tone-equal-temperment :intonation))
+                (main/add-module (osc-mod/triangle-wave :oscillator))
+                (main/add-module (mem-mod/memory-cell :phase 0))
+                (main/add-module (amp-mod/linear-amplifier :amp))
+                (main/add-module (const-mod/constant :delay-time 0.5))
+                (main/add-module (mem-mod/delay-line :delay 0.0 1.0 dt))
+                (main/add-module (audio-mod/mono-output :output line buffer-size)))
 
-(defn vibrato-triange [line buffer-size]
+   :patches {
+             [:intonation :note]      [:keyboard :note]
+             [:oscillator :frequency] [:intonation :frequency]
+             [:oscillator :phase]     [:phase :out]
+             [:phase :in]             [:oscillator :phase]
+             [:amp :in]               [:oscillator :amplitude]
+             [:amp :gain]             [:keyboard :gate]
+             [:delay :delay-time]  [:delay-time :value]
+             [:delay :in]         [:amp :out]
+             [:output :audio]         [:delay :out]
+             }
+
+
+   :order  [:keyboard
+            :intonation
+            :phase
+            :oscillator
+            :amp
+            :delay-time
+            :delay
+            :output]
+   }
+  )
+
+(defn vibrato-triange [line buffer-size dt]
   {
    :modules (-> {}
                 (main/add-module (midi-mod/monophonic-keyboard :keyboard))
