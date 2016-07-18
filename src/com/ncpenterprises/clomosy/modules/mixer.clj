@@ -1,7 +1,25 @@
-(ns com.ncpenterprises.clomosy.modules.mixer)
+(ns com.ncpenterprises.clomosy.modules.mixer
+  (:require [clojure.test :as test]))
 
-(defn output [state midi-frame inputs dt]
-  (+ (:input_1 inputs) (:input_2 inputs)))
+
+(test/with-test
+  (defn output [state midi-frame inputs dt]
+    (+ (:in_1 inputs) (:in_2 inputs)))
+
+  (test/is (=
+             (output
+               {}
+               nil
+               {:in_1 1.0
+                :in_2 2.0
+                }
+               0.1
+               )
+             (+ 1.0 2.0)
+             )
+           )
+  )
+
 
 (defn mixer [id]
   {
@@ -9,12 +27,13 @@
    :id id
 
    :inputs #{
-             :input_1
-             :input_2
+             :in_1
+             :in_2
              }
 
    :outputs {
-             :output
+             :out output
              }
    }
   )
+

@@ -6,7 +6,8 @@
             [com.ncpenterprises.clomosy.modules.memory :as mem-mod]
             [com.ncpenterprises.clomosy.modules.amplification :as amp-mod]
             [com.ncpenterprises.clomosy.main :as main]
-            [com.ncpenterprises.clomosy.modules.constant :as const-mod]))
+            [com.ncpenterprises.clomosy.modules.constant :as const-mod]
+            [com.ncpenterprises.clomosy.modules.mixer :as mixer-mod]))
 
 (defn simple-triange [line buffer-size dt]
   {
@@ -48,6 +49,11 @@
                 (main/add-module (amp-mod/linear-amplifier :amp))
                 (main/add-module (const-mod/constant :delay-time 0.5))
                 (main/add-module (mem-mod/delay-line :delay 0.0 1.0 dt))
+                (main/add-module (const-mod/constant :feedback 0.5))
+                (main/add-module (amp-mod/linear-amplifier :feedback-amp))
+                (main/add-module (mixer-mod/mixer :mixer))
+                (main/add-module (const-mod/constant :volume 0.5))
+                (main/add-module (amp-mod/linear-amplifier :output-amp))
                 (main/add-module (audio-mod/mono-output :output line buffer-size)))
 
    :patches {
@@ -57,9 +63,15 @@
              [:phase :in]             [:oscillator :phase]
              [:amp :in]               [:oscillator :amplitude]
              [:amp :gain]             [:keyboard :gate]
+             [:mixer :in_1]   [:amp :out]
+             [:mixer :in_2] [:feedback-amp :out]
+             [:feedback-amp :in] [:delay :out]
+             [:feedback-amp :gain] [:feedback :value]
              [:delay :delay-time]  [:delay-time :value]
-             [:delay :in]         [:amp :out]
-             [:output :audio]         [:delay :out]
+             [:delay :in]         [:mixer :out]
+             [:output-amp :in] [:mixer :out]
+             [:output-amp :gain] [:volume :value]
+             [:output :audio]         [:output-amp :out]
              }
 
 
@@ -70,6 +82,11 @@
             :amp
             :delay-time
             :delay
+            :feedback
+            :feedback-amp
+            :mixer
+            :volume
+            :output-amp
             :output]
    }
   )

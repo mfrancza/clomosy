@@ -89,7 +89,7 @@
   )
 
 (defmethod apply-message ShortMessage [midi-state message]
-  ;(println midi-state)
+  (println midi-state)
   (if (= ShortMessage/NOTE_ON (.getCommand message))
     (assoc midi-state :notes-on (conj (:notes-on midi-state) (.getData1 message)))
     (if (= ShortMessage/NOTE_OFF (.getCommand message))
