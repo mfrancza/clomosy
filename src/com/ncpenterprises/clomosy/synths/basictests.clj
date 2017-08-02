@@ -9,7 +9,7 @@
             [com.ncpenterprises.clomosy.modules.constant :as const-mod]
             [com.ncpenterprises.clomosy.modules.mixer :as mixer-mod]))
 
-(defn simple-triange [line buffer-size dt]
+(defn simple-triangle [line buffer-size dt]
   {
    :modules (-> {}
                 (main/add-module (midi-mod/monophonic-keyboard :keyboard))
@@ -39,7 +39,7 @@
    }
   )
 
-(defn delay-line-triange [line buffer-size dt]
+(defn delay-line-triangle [line buffer-size dt]
   {
    :modules (-> {}
                 (main/add-module (midi-mod/monophonic-keyboard :keyboard))
@@ -91,7 +91,7 @@
    }
   )
 
-(defn vibrato-triange [line buffer-size dt]
+(defn vibrato-triangle [line buffer-size dt]
   {
    :modules (-> {}
                 (main/add-module (midi-mod/monophonic-keyboard :keyboard))

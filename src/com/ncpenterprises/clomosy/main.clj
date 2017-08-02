@@ -9,8 +9,10 @@
             [com.ncpenterprises.clomosy.modules.intonation :as int-mod]
             [com.ncpenterprises.clomosy.modules.memory :as mem-mod]
             [com.ncpenterprises.clomosy.modules.constant :as const-mod]
+            [com.ncpenterprises.clomosy.engines.simple :as engine]
             )
-  (:import (javax.sound.sampled AudioFormat SourceDataLine)))
+  (:import (javax.sound.sampled AudioFormat SourceDataLine)
+           (javax.sound.midi MidiDeviceTransmitter)))
 
 
 (defn update-module [module midi-frame inputs dt]
@@ -312,7 +314,7 @@
     (.open ^SourceDataLine line (AudioFormat. sample_rate 8 1 true true) (/ sample_rate 10))
     (println (.getFormat line))
     (.start line)
-    (.setReceiver midi-in (midi/queue-receiver midi-queue))
+    (.setReceiver ^MidiDeviceTransmitter midi-in (midi/queue-receiver midi-queue))
     (println (.getBufferSize line))
     (let [dt  (/ 1.0 sample_rate)
           buffer-size (/ (.getBufferSize line) 10)
@@ -331,39 +333,8 @@
              ]
 
         (let [;_ (println order)
-              state (reduce (fn [state module_id]
-                              (let [
-                                    modules (:modules state)
-                                    module (module_id (:modules state))
-                                    inputs (get-inputs module patches (:outputs state))
-                                    ;_ (println module_id)
-                                    ;_ (println modules)
-                                    module (update-module module midi-frame inputs dt)
-                                    ;_ (println (:outputs state))
-                                    ;_ (println inputs)
-                                    outputs (get-outputs (:outputs state) module midi-frame inputs dt)
-                                    modules (assoc (:modules state) module_id module)
-                                    ]
-                                (-> state
-                                    (assoc :modules modules)
-                                    (assoc :outputs outputs)
-                                    )
-                                ))
-                            state
-                            order
-                            )
-              state (reduce (fn [state module_id]
-                              (let [module (module_id (:modules state))
-                                    inputs (get-inputs module patches (:outputs state))
-                                    module (update-module-after module midi-frame inputs dt)
-                                    modules (assoc (:modules state) module_id module)
-                                    ]
-                                (assoc state :modules modules)
-                                )
-                              )
-                            state
-                            order
-                            )
+              state (engine/evaluate state patches order midi-frame dt)
+              state (engine/update-after state patches order midi-frame dt)
               ]
           ;(if (> (- (System/nanoTime) start-time ) (* dt 1E9))
           ;  (println (- (System/nanoTime) start-time ) (* dt 1E9))

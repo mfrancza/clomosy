@@ -1,6 +1,10 @@
 (ns com.ncpenterprises.clomosy.modules.composite)
 
-(defn evaluate-subsynth [state midi-frame inputs dt]  )
+(defn evaluate-subsynth [state midi-frame inputs dt]
+
+  )
+
+(defn build-output [])
 
 
 (defn composite [id
@@ -8,20 +12,33 @@
                  sub-inputs
                  sub-outputs
                  ]
-  {
    {
     :id id
 
-    :inputs #{
-              :in_1
-              :in_2
-              }
+    :inputs (keys sub-inputs)
 
-    :outputs {
-              :out
-              }
-    }
+    :outputs (reduce (fn [
+                          output-functions
+                          [composite-out module-out]
+                          ]
+                       (assoc
+                         output-functions
+                         composite-out
+                         (fn [state midi-frame inputs dt]
+                           (module-out (:sub-synth-state state))
+                           )
+                         )
+                       )
+                     {}
+                     (seq sub-outputs)
+                     )
 
-   :update evaluate-subsynth
+
+
+   :state   {
+             :sub-synth-state {}
+             }
+
+    :update evaluate-subsynth
    }
   )
