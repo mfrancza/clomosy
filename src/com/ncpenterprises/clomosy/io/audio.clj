@@ -12,14 +12,14 @@
   )
 
 
-    (defn output-frame [^SourceDataLine line buffer buffer-size frame]
+(defn output-frame [^SourceDataLine line buffer buffer-size frame]
 
-      (if (< (count buffer) buffer-size)
-        (conj buffer frame)
-        (let [_ (write-buffer line buffer buffer-size)]
-          (vector frame)
-          ))
-      )
+  (if (< (count buffer) buffer-size)
+    (conj buffer frame)
+    (let [_ (write-buffer line buffer buffer-size)]
+      (vector frame)
+      ))
+  )
 
 
 

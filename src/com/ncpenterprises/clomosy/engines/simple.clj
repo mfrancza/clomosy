@@ -42,11 +42,7 @@
   (let [module_id (:id module)]
     (reduce
       (fn [inputs key]
-        ;(println patches)
-        ;(println key)
-        ;(println [module_id key])
         (let [output (get-patch patches module_id key)]
-          ;(println output)
           (assoc inputs key (get outputs output))
           )
         )
@@ -61,7 +57,6 @@
                 dt]
     (reduce (fn [state module_id]
             (let [
-                  modules (:modules state)
                   module (module_id (:modules state))
                   inputs (get-inputs module patches (:outputs state))
                   module (update-module module midi-frame inputs dt)

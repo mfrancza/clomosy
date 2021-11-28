@@ -1,10 +1,5 @@
 (ns com.ncpenterprises.clomosy.modules.midi
-  (:require [com.ncpenterprises.clomosy.io.audio :as io]
-            [clojure.core.async :as async]
-            [com.ncpenterprises.clomosy.io.midi :as midi]
-            [com.ncpenterprises.clomosy.modules.audio :as audio-mod]
-            )
-  (:import (javax.sound.sampled SourceDataLine AudioFormat)))
+  (:require [com.ncpenterprises.clomosy.io.midi :as midi]))
 
 (defn gate [state midi-frame inputs dt]
   (if (empty? (:notes-on state)) 0 1))
