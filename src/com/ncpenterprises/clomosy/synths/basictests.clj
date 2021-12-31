@@ -5,19 +5,19 @@
             [com.ncpenterprises.clomosy.modules.oscillator :as osc-mod]
             [com.ncpenterprises.clomosy.modules.memory :as mem-mod]
             [com.ncpenterprises.clomosy.modules.amplification :as amp-mod]
-            [com.ncpenterprises.clomosy.main :as main]
+            [com.ncpenterprises.clomosy.core :as core]
             [com.ncpenterprises.clomosy.modules.constant :as const-mod]
             [com.ncpenterprises.clomosy.modules.mixer :as mixer-mod]))
 
 (defn simple-triangle [line buffer-size dt]
   {
    :modules (-> {}
-                (main/add-module (midi-mod/monophonic-keyboard :keyboard))
-                (main/add-module (int-mod/twelve-tone-equal-temperment :intonation))
-                (main/add-module (osc-mod/triangle-wave :oscillator))
-                (main/add-module (mem-mod/memory-cell :phase 0))
-                (main/add-module (amp-mod/linear-amplifier :amp))
-                (main/add-module (audio-mod/mono-output :output line buffer-size)))
+                (core/add-module (midi-mod/monophonic-keyboard :keyboard))
+                (core/add-module (int-mod/twelve-tone-equal-temperment :intonation))
+                (core/add-module (osc-mod/triangle-wave :oscillator))
+                (core/add-module (mem-mod/memory-cell :phase 0))
+                (core/add-module (amp-mod/linear-amplifier :amp))
+                (core/add-module (audio-mod/mono-output :output line buffer-size)))
 
   :patches {
             [:intonation :note]      [:keyboard :note]
@@ -42,19 +42,19 @@
 (defn delay-line-triangle [line buffer-size dt]
   {
    :modules (-> {}
-                (main/add-module (midi-mod/monophonic-keyboard :keyboard))
-                (main/add-module (int-mod/twelve-tone-equal-temperment :intonation))
-                (main/add-module (osc-mod/triangle-wave :oscillator))
-                (main/add-module (mem-mod/memory-cell :phase 0))
-                (main/add-module (amp-mod/linear-amplifier :amp))
-                (main/add-module (const-mod/constant :delay-time 0.5))
-                (main/add-module (mem-mod/delay-line :delay 0.0 1.0 dt))
-                (main/add-module (const-mod/constant :feedback 0.5))
-                (main/add-module (amp-mod/linear-amplifier :feedback-amp))
-                (main/add-module (mixer-mod/mixer :mixer))
-                (main/add-module (const-mod/constant :volume 0.5))
-                (main/add-module (amp-mod/linear-amplifier :output-amp))
-                (main/add-module (audio-mod/mono-output :output line buffer-size)))
+                (core/add-module (midi-mod/monophonic-keyboard :keyboard))
+                (core/add-module (int-mod/twelve-tone-equal-temperment :intonation))
+                (core/add-module (osc-mod/triangle-wave :oscillator))
+                (core/add-module (mem-mod/memory-cell :phase 0))
+                (core/add-module (amp-mod/linear-amplifier :amp))
+                (core/add-module (const-mod/constant :delay-time 0.5))
+                (core/add-module (mem-mod/delay-line :delay 0.0 1.0 dt))
+                (core/add-module (const-mod/constant :feedback 0.5))
+                (core/add-module (amp-mod/linear-amplifier :feedback-amp))
+                (core/add-module (mixer-mod/mixer :mixer))
+                (core/add-module (const-mod/constant :volume 0.5))
+                (core/add-module (amp-mod/linear-amplifier :output-amp))
+                (core/add-module (audio-mod/mono-output :output line buffer-size)))
 
    :patches {
              [:intonation :note]      [:keyboard :note]
@@ -94,19 +94,19 @@
 (defn vibrato-triangle [line buffer-size dt]
   {
    :modules (-> {}
-                (main/add-module (midi-mod/monophonic-keyboard :keyboard))
-                (main/add-module (int-mod/twelve-tone-equal-temperment :intonation))
+                (core/add-module (midi-mod/monophonic-keyboard :keyboard))
+                (core/add-module (int-mod/twelve-tone-equal-temperment :intonation))
 
-                (main/add-module (const-mod/constant :lfo-freq 5))
-                (main/add-module (osc-mod/sine-wave :lfo))
-                (main/add-module (mem-mod/memory-cell :lfo-phase 0))
+                (core/add-module (const-mod/constant :lfo-freq 5))
+                (core/add-module (osc-mod/sine-wave :lfo))
+                (core/add-module (mem-mod/memory-cell :lfo-phase 0))
 
-                (main/add-module (amp-mod/linear-amplifier :freq-amp))
+                (core/add-module (amp-mod/linear-amplifier :freq-amp))
 
-                (main/add-module (osc-mod/triangle-wave :oscillator))
-                (main/add-module (mem-mod/memory-cell :phase 0))
-                (main/add-module (amp-mod/linear-amplifier :amp))
-                (main/add-module (audio-mod/mono-output :output line buffer-size)))
+                (core/add-module (osc-mod/triangle-wave :oscillator))
+                (core/add-module (mem-mod/memory-cell :phase 0))
+                (core/add-module (amp-mod/linear-amplifier :amp))
+                (core/add-module (audio-mod/mono-output :output line buffer-size)))
 
    :patches {
              [:intonation :note]      [:keyboard :note]

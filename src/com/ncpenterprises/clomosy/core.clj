@@ -1,17 +1,22 @@
-(ns com.ncpenterprises.clomosy.main
+(ns com.ncpenterprises.clomosy.core
   (:require [com.ncpenterprises.clomosy.io.midi :as midi]
             [clojure.core.async :as async]
             [com.ncpenterprises.clomosy.io.audio :as io]
             [com.ncpenterprises.clomosy.engines.simple :as engine]
             )
   (:import (javax.sound.sampled AudioFormat SourceDataLine)
-           (javax.sound.midi MidiDeviceTransmitter)))
+           (javax.sound.midi MidiDeviceTransmitter))
+  (:gen-class)
+  )
+
 
 (defn add-module [modules module-to-add]
   (assoc modules (:id module-to-add) module-to-add)
   )
 
-(defn test-synth [synth-def sample_rate]
+(defn run-synth [synth-def sample_rate]
+  (println "Synth fn" synth-def)
+  (println "Sample rate" sample_rate)
   (let [line (io/getOutputLine sample_rate 8 1)
         _ (println line)
         midi-queue (async/chan 100)
@@ -67,3 +72,11 @@
     (.close midi-in)
     )
   )
+
+(defn -main
+  [& args]
+  (let [configuration (read-string (first args))
+        synth-def (requiring-resolve (:synth-def configuration))
+        sample-rate (:sample-rate configuration)]
+    (when (nil? synth-def) (throw (RuntimeException. (str "No method found for " synth-def))))
+    (run-synth synth-def sample-rate)))
