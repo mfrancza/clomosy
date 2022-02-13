@@ -3,6 +3,7 @@
             [clojure.core.async :as async]
             [com.ncpenterprises.clomosy.io.audio :as io]
             [com.ncpenterprises.clomosy.engines.simple :as engine]
+            [com.ncpenterprises.clomosy.engines.simplev2 :as engine-v2]
             )
   (:import (javax.sound.sampled AudioFormat SourceDataLine)
            (javax.sound.midi MidiDeviceTransmitter))
@@ -73,10 +74,26 @@
     )
   )
 
+(defn run-synth-v2
+  [synth-def frame-rate]
+  (println "synth fn" synth-def)
+  (println "frame rate" frame-rate)
+  (let [dt (/ 1.0 frame-rate)
+        synth (synth-def dt)
+        modules (:modules synth)
+        patches (:patches synth)
+        order (:order synth)
+        initial-state (engine-v2/initial-state modules)]
+    (loop [previous-state initial-state]
+      (let [result (engine-v2/evaluate modules previous-state patches order dt)
+            updated-state (:state result)
+            ]
+        (recur updated-state)))))
+
 (defn -main
   [& args]
   (let [configuration (read-string (first args))
         synth-def (requiring-resolve (:synth-def configuration))
-        sample-rate (:sample-rate configuration)]
+        frame-rate (:frame-rate configuration)]
     (when (nil? synth-def) (throw (RuntimeException. (str "No method found for " synth-def))))
-    (run-synth synth-def sample-rate)))
+    (run-synth synth-def frame-rate)))

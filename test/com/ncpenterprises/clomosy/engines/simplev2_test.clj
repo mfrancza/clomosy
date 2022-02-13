@@ -3,7 +3,7 @@
             [com.ncpenterprises.clomosy.engines.simplev2 :refer :all]))
 
 (deftest get-patch-test
-  (testing "returns [module-id output] mapped to the input or nil if no module is ampped"
+  (testing "returns [module-id output] mapped to the input or nil if no module is mapped"
     (let [patches {[:module-2 :input-1] [:module-1 :output-1]
                    [:module-2 :input-2] [:module-1 :output-2]}]
       (is (= (get-patch patches :module-2 :input-1) [:module-1 :output-1]))
@@ -23,8 +23,7 @@
 
 (deftest evaluate-module-test
   (testing "returns the output values and updated state for the module"
-    (let [module (map->Module {:id :module-2
-                               :input-names [:add]
+    (let [module (map->Module {:input-names [:add]
                                :update-fn (fn [inputs state dt]
                                             (let [add (:add inputs)
                                                   sum (+ (:sum state) add)]
@@ -35,51 +34,46 @@
           outputs {:module-1 {:output-1 1.0}}
           patches {[:module-2 :add] [:module-1 :output-1]}
           dt 1.0
-          output (evaluate-module module patches outputs input-state dt)]
+          output (evaluate-module :module-2 module patches outputs input-state dt)]
       (is (= output {:state {:sum 11.0}
                      :output {:sum 11.0
                               :added 1.0}})))))
 
 (deftest evaluate-test
   (testing "evaluates the modules in the expected order, updating the states"
-    (let [constant-module (map->Module {:id :constant-module
-                                        :update-fn (fn [inputs state dt]
+    (let [constant-module (map->Module {:update-fn (fn [inputs state dt]
                                                      {:output {:value 5.0}}) })
-          incrementing-module (map->Module {:id :incrementing-module
-                                            :update-fn (fn [inputs state dt]
+          incrementing-module (map->Module {:update-fn (fn [inputs state dt]
                                                          (let [value (+ (:value state) 1.0)]
                                                            {:state {:value value}
                                                             :output {:value value}}))})
-          summing-module (map->Module {:id :summing-module
-                                       :input-names [:input-1
+          summing-module (map->Module {:input-names [:input-1
                                                     :input-2]
                                        :update-fn (fn [inputs state dt]
                                                    (let [value (+ (:input-1 inputs) (:input-2 inputs))]
                                                      {:output {:sum value}}))})
-          modules {(:id constant-module) constant-module
-                   (:id incrementing-module) incrementing-module
-                   (:id summing-module) summing-module}
+          modules {:constant-module constant-module
+                   :incrementing-module incrementing-module
+                   :summing-module summing-module}
           order [:constant-module :incrementing-module :summing-module]
-          initial-state {(:id incrementing-module) {:value 0.0}}
+          initial-state {:incrementing-module {:value 0.0}}
           patches {[:summing-module :input-1] [:constant-module :value]
                    [:summing-module :input-2] [:incrementing-module :value]}
           dt 1.0
           result (evaluate modules initial-state patches order dt)
           state (:state result)
           outputs (:outputs result)]
-      (is (= state {(:id incrementing-module) {:value 1.0}}))
-      (is (= outputs {(:id constant-module) {:value 5.0}
-                      (:id incrementing-module) {:value 1.0}
-                      (:id summing-module) {:sum 6.0}})))))
+      (is (= state {:incrementing-module {:value 1.0}}))
+      (is (= outputs {:constant-module {:value 5.0}
+                      :incrementing-module {:value 1.0}
+                      :summing-module {:sum 6.0}})))))
 
 (deftest initial-state-test
   (testing "each module's initial state fn value is loaded into the initial state map"
-    (let [module-1 (map->Module {:id :module-1
-                                 :initial-state-fn (fn [] 1.0) })
-          module-2 (map->Module {:id :module-2
-                                 :initial-state-fn (fn [] 2.0) })
-          modules {(:id module-1) module-1
-                   (:id module-2) module-2}
+    (let [module-1 (map->Module {:initial-state-fn (fn [] 1.0) })
+          module-2 (map->Module {:initial-state-fn (fn [] 2.0) })
+          modules {:module-1 module-1
+                   :module-2 module-2}
           initial-state (initial-state modules)]
-      (is (= initial-state {(:id module-1) 1.0
-                            (:id module-2) 2.0})))))
+      (is (= initial-state {:module-1 1.0
+                            :module-2 2.0})))))

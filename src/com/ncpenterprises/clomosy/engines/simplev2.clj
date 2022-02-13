@@ -1,8 +1,7 @@
 (ns com.ncpenterprises.clomosy.engines.simplev2)
 
 (defrecord Module
-  [id
-   update-fn
+  [update-fn
    initial-state-fn
    input-names
    output-names])
@@ -27,9 +26,8 @@
 
 (defn evaluate-module
   "Evaluates a module in the synthesizer and returns its outputs and new state"
-  [module patches outputs state dt]
-  (let [module-id (:id module)
-        inputs (get-inputs module-id (:input-names module) patches outputs)
+  [module-id module patches outputs state dt]
+  (let [inputs (get-inputs module-id (:input-names module) patches outputs)
         update-fn (:update-fn module)]
     (update-fn inputs (module-id state) dt)))
 
@@ -52,7 +50,7 @@
             (let [state (:state frame)
                   outputs (:outputs frame)
                   module (module-id modules)
-                  module-update (evaluate-module module patches outputs state dt)
+                  module-update (evaluate-module module-id module patches outputs state dt)
                   module-state (:state module-update)
                   module-output (:output module-update)
                   state (if (not (nil? module-state))
