@@ -26,10 +26,10 @@
 
 (defn evaluate-module
   "Evaluates a module in the synthesizer and returns its outputs and new state"
-  [module-id module patches outputs state dt]
+  [module-id module patches outputs state]
   (let [inputs (get-inputs module-id (:input-names module) patches outputs)
         update-fn (:update-fn module)]
-    (update-fn inputs (module-id state) dt)))
+    (update-fn inputs (module-id state))))
 
 (defn initial-state [modules]
   "Initializes the state map based on the :initial-state-fn values of each module"
@@ -38,7 +38,7 @@
           {}
           modules))
 
-(defn evaluate [modules previous-state patches order dt]
+(defn evaluate [modules previous-state patches order]
   "Evaluates a frame of the synthesizer.
   modules is a map of module-id to Module.
   previous-state is the value of :state from a previous output or nil
@@ -50,7 +50,7 @@
             (let [state (:state frame)
                   outputs (:outputs frame)
                   module (module-id modules)
-                  module-update (evaluate-module module-id module patches outputs state dt)
+                  module-update (evaluate-module module-id module patches outputs state)
                   module-state (:state module-update)
                   module-output (:output module-update)
                   state (if (not (nil? module-state))

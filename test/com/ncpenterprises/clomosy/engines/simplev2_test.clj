@@ -24,7 +24,7 @@
 (deftest evaluate-module-test
   (testing "returns the output values and updated state for the module"
     (let [module (map->Module {:input-names [:add]
-                               :update-fn (fn [inputs state dt]
+                               :update-fn (fn [inputs state]
                                             (let [add (:add inputs)
                                                   sum (+ (:sum state) add)]
                                               {:state {:sum sum}
@@ -33,23 +33,22 @@
           input-state {:module-2 {:sum 10.0}}
           outputs {:module-1 {:output-1 1.0}}
           patches {[:module-2 :add] [:module-1 :output-1]}
-          dt 1.0
-          output (evaluate-module :module-2 module patches outputs input-state dt)]
+          output (evaluate-module :module-2 module patches outputs input-state)]
       (is (= output {:state {:sum 11.0}
                      :output {:sum 11.0
                               :added 1.0}})))))
 
 (deftest evaluate-test
   (testing "evaluates the modules in the expected order, updating the states"
-    (let [constant-module (map->Module {:update-fn (fn [inputs state dt]
+    (let [constant-module (map->Module {:update-fn (fn [inputs state]
                                                      {:output {:value 5.0}}) })
-          incrementing-module (map->Module {:update-fn (fn [inputs state dt]
+          incrementing-module (map->Module {:update-fn (fn [inputs state]
                                                          (let [value (+ (:value state) 1.0)]
                                                            {:state {:value value}
                                                             :output {:value value}}))})
           summing-module (map->Module {:input-names [:input-1
                                                     :input-2]
-                                       :update-fn (fn [inputs state dt]
+                                       :update-fn (fn [inputs state]
                                                    (let [value (+ (:input-1 inputs) (:input-2 inputs))]
                                                      {:output {:sum value}}))})
           modules {:constant-module constant-module
@@ -59,8 +58,7 @@
           initial-state {:incrementing-module {:value 0.0}}
           patches {[:summing-module :input-1] [:constant-module :value]
                    [:summing-module :input-2] [:incrementing-module :value]}
-          dt 1.0
-          result (evaluate modules initial-state patches order dt)
+          result (evaluate modules initial-state patches order)
           state (:state result)
           outputs (:outputs result)]
       (is (= state {:incrementing-module {:value 1.0}}))
