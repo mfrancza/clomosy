@@ -31,7 +31,7 @@
                :trigger (trigger midi-event)}}))
 
 (defn monophonic-keyboard
-  "returns a monophonic MIDI keyboard module which outputs the lowest note that is on and gate and trigger signals"
+  "returns a monophonic MIDI keyboard Module which outputs the lowest note that is on and gate and trigger signals"
   []
   (simple-v2-engine/map->Module {:initial-state-fn initial-state-fn
                                  :update-fn mono-keyboard-update-fn
@@ -47,7 +47,7 @@
     {:state state}))
 
 (defn printer
-  "prints MIDI messages received"
+  "returns a Module which prints MIDI messages received"
   []
   (simple-v2-engine/map->Module {:initial-state-fn initial-state-fn
                                  :update-fn printer-update-fn}))
