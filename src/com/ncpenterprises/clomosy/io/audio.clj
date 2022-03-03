@@ -1,7 +1,7 @@
 (ns com.ncpenterprises.clomosy.io.audio
   (:import (javax.sound.sampled AudioSystem DataLine$Info AudioFormat SourceDataLine)))
 
-(defn getOutputLine [sample-rate sample-size channels]
+(defn get-output-line [sample-rate sample-size channels]
   (AudioSystem/getLine (DataLine$Info. SourceDataLine
                                        (AudioFormat. sample-rate sample-size channels true true)
                                        ))

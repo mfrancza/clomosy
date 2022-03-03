@@ -18,7 +18,7 @@
 (defn run-synth [synth-def sample_rate]
   (println "Synth fn" synth-def)
   (println "Sample rate" sample_rate)
-  (let [line (io/getOutputLine sample_rate 8 1)
+  (let [line (io/get-output-line sample_rate 8 1)
         _ (println line)
         midi-queue (async/chan 100)
         _ (println midi-queue)
@@ -78,16 +78,14 @@
   [synth-def frame-rate]
   (println "synth fn" synth-def)
   (println "frame rate" frame-rate)
-  (let [dt (/ 1.0 frame-rate)
-        synth (synth-def dt)
+  (let [synth (synth-def frame-rate)
         modules (:modules synth)
         patches (:patches synth)
         order (:order synth)
         initial-state (engine-v2/initial-state modules)]
     (loop [previous-state initial-state]
-      (let [result (engine-v2/evaluate modules previous-state patches order dt)
-            updated-state (:state result)
-            ]
+      (let [result (engine-v2/evaluate modules previous-state patches order)
+            updated-state (:state result)]
         (recur updated-state)))))
 
 (defn -main
@@ -96,4 +94,4 @@
         synth-def (requiring-resolve (:synth-def configuration))
         frame-rate (:frame-rate configuration)]
     (when (nil? synth-def) (throw (RuntimeException. (str "No method found for " synth-def))))
-    (run-synth synth-def frame-rate)))
+    (run-synth-v2 synth-def frame-rate)))

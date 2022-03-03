@@ -2,6 +2,6 @@
   (:require [com.ncpenterprises.clomosy.modules.v2.midi :as midi-modules]))
 
 (defn midi-printer
-  [dt]
+  [frame-rate]
   {:modules {:midi-printer (midi-modules/printer)}
    :order [:midi-printer]})

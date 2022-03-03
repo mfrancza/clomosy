@@ -27,7 +27,7 @@
   )
 
 (defn testwave [freq waveform]
-  (let [line (io/getOutputLine 44100 8 1)]
+  (let [line (io/get-output-line 44100 8 1)]
     (println line)
     (.open ^SourceDataLine line (AudioFormat. 44100 8 1 true true))
     (println (.getFormat line))

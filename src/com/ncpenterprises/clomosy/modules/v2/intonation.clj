@@ -11,12 +11,12 @@
 
 (defn twelve-tone-equal-temperament-update-fn
   [inputs state]
-  {:outputs {:frequency (to-frequency (:note-number inputs))}})
+  {:outputs {:frequency (to-frequency (:note inputs))}})
 
 (defn twelve-tone-equal-temperament
   "Translates a MIDI note number to a frequency in twelve-tone equal temperament with A4 = 440Hz"
   []
   (simple-v2-engine/map->Module {:update-fn twelve-tone-equal-temperament-update-fn
-                                 :input-names [:note-number]
+                                 :input-names [:note]
                                  :output-names [:frequency]}))
 

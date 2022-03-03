@@ -41,16 +41,16 @@
 (deftest evaluate-test
   (testing "evaluates the modules in the expected order, updating the states"
     (let [constant-module (map->Module {:update-fn (fn [inputs state]
-                                                     {:output {:value 5.0}}) })
+                                                     {:outputs {:value 5.0}}) })
           incrementing-module (map->Module {:update-fn (fn [inputs state]
                                                          (let [value (+ (:value state) 1.0)]
                                                            {:state {:value value}
-                                                            :output {:value value}}))})
+                                                            :outputs {:value value}}))})
           summing-module (map->Module {:input-names [:input-1
                                                     :input-2]
                                        :update-fn (fn [inputs state]
                                                    (let [value (+ (:input-1 inputs) (:input-2 inputs))]
-                                                     {:output {:sum value}}))})
+                                                     {:outputs {:sum value}}))})
           modules {:constant-module constant-module
                    :incrementing-module incrementing-module
                    :summing-module summing-module}
@@ -67,11 +67,13 @@
                       :summing-module {:sum 6.0}})))))
 
 (deftest initial-state-test
-  (testing "each module's initial state fn value is loaded into the initial state map"
+  (testing "each module's initial state fn value is loaded into the initial state map if provided"
     (let [module-1 (map->Module {:initial-state-fn (fn [] 1.0) })
-          module-2 (map->Module {:initial-state-fn (fn [] 2.0) })
+          module-2 (map->Module {})
+          module-3 (map->Module {:initial-state-fn (fn [] 3.0) })
           modules {:module-1 module-1
-                   :module-2 module-2}
+                   :module-2 module-2
+                   :module-3 module-3}
           initial-state (initial-state modules)]
       (is (= initial-state {:module-1 1.0
-                            :module-2 2.0})))))
+                            :module-3 3.0})))))

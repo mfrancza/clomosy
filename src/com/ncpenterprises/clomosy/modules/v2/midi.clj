@@ -11,7 +11,7 @@
   (if (nil? (first (:notes-on state))) 0 (first (:notes-on state))))
 
 (defn- trigger [midi-event]
-  (not (nil? midi-event)))
+  (if (not (nil? midi-event)) 1.0 0.0))
 
 (defn initial-state-fn []
   (let [midi-queue (async/chan 100)
@@ -21,7 +21,7 @@
     (.setReceiver ^MidiDeviceTransmitter midi-in (midi/queue-receiver midi-queue))
     {:midi-queue midi-queue}))
 
-(defn mono-keyboard-update-fn [inputs state dt]
+(defn mono-keyboard-update-fn [inputs state]
   (let [midi-queue (:midi-queue state)
         midi-event (async/poll! midi-queue)
         updated-state (midi/apply-message state midi-event)]

@@ -34,7 +34,10 @@
 (defn initial-state [modules]
   "Initializes the state map based on the :initial-state-fn values of each module"
   (reduce (fn [state [module-id module]]
-            (assoc state module-id ((:initial-state-fn module))))
+            (let [initial-state-fn (:initial-state-fn module)]
+              (if (not (nil? initial-state-fn))
+                (assoc state module-id (initial-state-fn))
+                state)))
           {}
           modules))
 
@@ -52,7 +55,7 @@
                   module (module-id modules)
                   module-update (evaluate-module module-id module patches outputs state)
                   module-state (:state module-update)
-                  module-output (:output module-update)
+                  module-output (:outputs module-update)
                   state (if (not (nil? module-state))
                           (assoc state module-id module-state)
                           state)
