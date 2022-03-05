@@ -38,4 +38,4 @@
 
 (defn triangle-wave-fn
   [phase]
-  (- (* 2 (Math/abs (sawtooth-wave-fn phase))) 1))
+  (- (* 2 (Math/abs ^double (sawtooth-wave-fn phase))) 1))

@@ -46,9 +46,7 @@
   modules is a map of module-id to Module.
   previous-state is the value of :state from a previous output or nil
   patches is a map of [module-id input] to [module-id and output]
-  order is a vector of module-ids in the order they should be evaluated
-  midi-frame is the midi event to evaluate in this frame or nil if one has not occurred
-  dt is the duration of the frame (1/sample rate)"
+  order is a vector of module-ids in the order they should be evaluated"
   (reduce (fn [frame module-id]
             (let [state (:state frame)
                   outputs (:outputs frame)

@@ -24,7 +24,7 @@
     {:state (assoc state :buffer (audio/output-frame line buffer buffer-size output))}))
 
 (defn mono-output [frame-rate]
-  "returns a Module that outputs the product of the in and gain inputs"
+  "returns a Module that sends the output value to a mono audio line"
   (simple-v2-engine/map->Module {:initial-state-fn (get-mono-output-initial-state-fn frame-rate)
                                  :update-fn        mono-output-update-fn
                                  :input-names      [:output]}))
