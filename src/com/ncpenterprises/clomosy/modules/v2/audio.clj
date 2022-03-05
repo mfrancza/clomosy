@@ -1,13 +1,13 @@
 (ns com.ncpenterprises.clomosy.modules.v2.audio
   (:require [com.ncpenterprises.clomosy.engines.simplev2 :as simple-v2-engine]
             [com.ncpenterprises.clomosy.io.audio :as audio])
-  (:import (javax.sound.sampled SourceDataLine AudioFormat)))
+  (:import (javax.sound.sampled SourceDataLine)))
 
 (defn get-mono-output-initial-state-fn
   [sample-rate]
   (fn []
     (let [line (audio/get-output-line sample-rate 8 1)
-          _ (.open ^SourceDataLine line (AudioFormat. sample-rate 8 1 true true) (/ sample-rate 10))
+          _ (.open ^SourceDataLine line (audio/map->AudioFormat {:sample-rate sample-rate :sample-size-in-bits 8 :channels 1}) (/ sample-rate 10))
           _ (.start line)
           buffer-size (/ (.getBufferSize line) 10)
           buffer []]
