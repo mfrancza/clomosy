@@ -1,30 +1,26 @@
 (ns com.ncpenterprises.clomosy.modules.v2.audio
   (:require [com.ncpenterprises.clomosy.engines.simplev2 :as simple-v2-engine]
-            [com.ncpenterprises.clomosy.io.audio :as audio])
-  (:import (javax.sound.sampled SourceDataLine)))
+            [com.ncpenterprises.clomosy.io.audio :as audio]))
 
-(defn get-mono-output-initial-state-fn
-  [sample-rate]
+(defn get-output-line-initial-state-fn
+  [audio-format buffer-size]
   (fn []
-    (let [line (audio/get-output-line sample-rate 8 1)
-          _ (.open ^SourceDataLine line (audio/map->AudioFormat {:sample-rate sample-rate :sample-size-in-bits 8 :channels 1}) (/ sample-rate 10))
-          _ (.start line)
-          buffer-size (/ (.getBufferSize line) 10)
-          buffer []]
-      {:line line
-       :buffer buffer
-       :buffer-size buffer-size})))
+    (let [line (audio/get-output-line audio-format buffer-size)]
+      (audio/open-output-line line audio-format buffer-size)
+      (audio/start-output-line line)
+      {:encoding-fn (audio/get-encoding-fn (audio/get-line-format line))
+       :line line})))
 
-(defn mono-output-update-fn
+(defn mono-output-line-update-fn
   [inputs state]
   (let [line (:line state)
-        buffer (:buffer state)
-        buffer-size (:buffer-size state)
-        output (* 126 (:output inputs))]
-    {:state (assoc state :buffer (audio/output-frame line buffer buffer-size output))}))
+        encoding-fn (:encoding-fn state)
+        output (encoding-fn (:output inputs))]
+    (audio/write-frame line output)
+    {:state state}))
 
-(defn mono-output [frame-rate]
+(defn mono-output-line [audio-format buffer-size]
   "returns a Module that sends the output value to a mono audio line"
-  (simple-v2-engine/map->Module {:initial-state-fn (get-mono-output-initial-state-fn frame-rate)
-                                 :update-fn        mono-output-update-fn
+  (simple-v2-engine/map->Module {:initial-state-fn (get-output-line-initial-state-fn (audio/map->AudioFormat audio-format) buffer-size)
+                                 :update-fn        mono-output-line-update-fn
                                  :input-names      [:output]}))
