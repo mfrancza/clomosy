@@ -1,16 +1,46 @@
 (ns com.ncpenterprises.clomosy.io.midi
-  (:require [com.ncpenterprises.clomosy.io.audio :as io]
-            [clojure.core.async :as async])
-  (:import (javax.sound.midi MidiSystem Receiver ShortMessage)))
+  "functions for interacting with MIDI IO via the javax.sound.midi interface"
+  (:require [clojure.core.async :as async])
+  (:import (javax.sound.midi MidiSystem Receiver ShortMessage MidiDevice)))
 
-(defn getTransmitter []
+(defn midi-device-info
+  "Returns the MidiDevice$Info for the MidiDevices in the MidiSystem"
+  []
+  (MidiSystem/getMidiDeviceInfo))
+
+(defn midi-device
+  "Returns a MIDI device matching the supplied MidiDevice$Info"
+  [midi-device-info]
+  (MidiSystem/getMidiDevice midi-device-info))
+
+(defn midi-transmitter
+  "Obtains a Transmitter from the system or provided MidiDevice"
+  []
   (MidiSystem/getTransmitter)
-  )
+  [midi-device]
+  (.getTransmitter ^MidiDevice midi-device))
 
-(defn print-receiver []
+(defn midi-receiver
+  "creates a Receiver which calls the provided functions for it's methods"
+  [send-fn close-fn]
   (reify Receiver
-          (send [this message time-stamp]
-             (println message time-stamp))))
+    (send [this message time-stamp]
+      (send-fn this message time-stamp))
+    (close [this]
+      (close-fn this)))
+  [send-fn]
+  (reify Receiver
+    (send [this message time-stamp]
+      (send-fn this message time-stamp))))
+
+(defn channel-receiver
+  "creates a Receiver which sends MidiMessages to midi-channel and closes it when the device closes"
+  [midi-channel]
+  (midi-receiver
+    (fn [this message time-stamp]
+      (async/>!! midi-channel message))
+    (fn [this]
+      (async/close! midi-channel))))
 
 (defn queue-receiver [queue]
   (reify Receiver
