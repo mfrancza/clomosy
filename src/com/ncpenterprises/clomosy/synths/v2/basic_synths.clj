@@ -11,7 +11,7 @@
              :intonation (intonation-modules/twelve-tone-equal-temperament)
              :oscillator (oscillator-modules/sampled-wave-fn frame-rate oscillator-modules/sine-wave-fn)
              :amplification (mixer-modules/mixer 2 *)
-             :output (audio-modules/mono-output-line frame-rate (/ frame-rate 10))}
+             :output (audio-modules/mono-output-line {:sample-rate frame-rate :sample-size-in-bits 8 :channels 1} (/ frame-rate 10))}
    :order   [:keyboard
              :intonation
              :oscillator

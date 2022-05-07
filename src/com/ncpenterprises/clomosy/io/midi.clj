@@ -15,10 +15,10 @@
 
 (defn midi-transmitter
   "Obtains a Transmitter from the system or provided MidiDevice"
-  []
-  (MidiSystem/getTransmitter)
-  [midi-device]
-  (.getTransmitter ^MidiDevice midi-device))
+  ([]
+   (MidiSystem/getTransmitter))
+  ([midi-device]
+   (.getTransmitter ^MidiDevice midi-device)))
 
 (defn midi-receiver
   "creates a Receiver which calls the provided functions for it's methods"
@@ -27,11 +27,7 @@
     (send [this message time-stamp]
       (send-fn this message time-stamp))
     (close [this]
-      (close-fn this)))
-  [send-fn]
-  (reify Receiver
-    (send [this message time-stamp]
-      (send-fn this message time-stamp))))
+      (close-fn this))))
 
 (defn channel-receiver
   "creates a Receiver which sends MidiMessages to midi-channel and closes it when the device closes"
@@ -41,12 +37,6 @@
       (async/>!! midi-channel message))
     (fn [this]
       (async/close! midi-channel))))
-
-(defn queue-receiver [queue]
-  (reify Receiver
-    (send [this message time-stamp]
-      (async/>!! queue message))))
-
 
 (defmulti apply-message
          (fn [midi-state message] (class message) ))

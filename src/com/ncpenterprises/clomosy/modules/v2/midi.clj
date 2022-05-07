@@ -1,34 +1,47 @@
 (ns com.ncpenterprises.clomosy.modules.v2.midi
   (:require [com.ncpenterprises.clomosy.engines.simplev2 :as simple-v2-engine]
             [clojure.core.async :as async]
-            [com.ncpenterprises.clomosy.io.midi :as midi])
-  (:import (javax.sound.midi MidiDeviceTransmitter)))
+            [com.ncpenterprises.clomosy.io.midi :as midi]
+            [com.ncpenterprises.clomosy.io.midi.messages :as midi-messages])
+  (:import (javax.sound.midi Transmitter)))
 
-(defn- gate [state]
-  (if (empty? (:notes-on state)) 0 1))
+(defn update-notes-on
+  "Updates the notes-on map of the note number to the note event with the midi-message"
+  [notes-on midi-message]
+  (cond
+    (nil? midi-message) notes-on
+    (midi-messages/note-on? midi-message) (if (= (midi-messages/velocity midi-message) 0)
+                                            (dissoc notes-on (midi-messages/note-number midi-message))
+                                            (assoc notes-on (midi-messages/note-number midi-message) midi-message))
+    (midi-messages/note-off? midi-message) (dissoc notes-on (midi-messages/note-number midi-message))))
 
-(defn- note [state]
-  (if (nil? (first (:notes-on state))) 0 (first (:notes-on state))))
+(defn gate [notes-on]
+  (if (empty? notes-on) 0.0 1.0))
 
-(defn- trigger [midi-event]
-  (if (not (nil? midi-event)) 1.0 0.0))
+(defn note [notes-on]
+  (if (empty? notes-on)
+    0.0
+    (apply min (keys notes-on))))
+
+(defn trigger [midi-message]
+  (if (and (not (nil? midi-message)) (midi-messages/note-on? midi-message)) 1.0 0.0))
 
 (defn initial-state-fn []
-  (let [midi-queue (async/chan 100)
-        _ (println midi-queue)
-        midi-in (midi/getTransmitter)
-        _ (println midi-in)]
-    (.setReceiver ^MidiDeviceTransmitter midi-in (midi/queue-receiver midi-queue))
-    {:midi-queue midi-queue}))
+  (let [midi-channel (async/chan 10)
+        transmitter (midi/midi-transmitter)
+        receiver (midi/channel-receiver midi-channel)]
+    (.setReceiver ^Transmitter transmitter receiver)
+    {:midi-channel midi-channel}))
 
 (defn mono-keyboard-update-fn [inputs state]
-  (let [midi-queue (:midi-queue state)
-        midi-event (async/poll! midi-queue)
-        updated-state (midi/apply-message state midi-event)]
-    {:state updated-state
-     :outputs {:gate (gate updated-state)
-               :note (note updated-state)
-               :trigger (trigger midi-event)}}))
+  (let [midi-channel (:midi-channel state)
+        midi-message (async/poll! midi-channel)
+        notes-on (update-notes-on (:notes-on state) midi-message)]
+    {:state {:midi-channel midi-channel
+             :notes-on notes-on}
+     :outputs {:gate (gate notes-on)
+               :note (note notes-on)
+               :trigger (trigger midi-message)}}))
 
 (defn monophonic-keyboard
   "returns a monophonic MIDI keyboard Module which outputs the lowest note that is on and gate and trigger signals"
