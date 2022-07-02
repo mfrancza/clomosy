@@ -53,7 +53,7 @@
                                                 :trigger]}))
 
 (defn printer-update-fn [inputs state]
-  (let [midi-queue (:midi-queue state)
+  (let [midi-queue (:midi-channel state)
         midi-event (async/poll! midi-queue)]
     (when (not (nil? midi-event))
       (println midi-event))

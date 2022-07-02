@@ -1,5 +1,5 @@
 (ns clomosy.synths.midi-tools
-  (:require [clomosy.modules.v2.midi :as midi-modules]))
+  (:require [clomosy.modules.midi :as midi-modules]))
 
 (defn midi-printer
   [frame-rate]
