@@ -1,6 +1,6 @@
-(ns com.ncpenterprises.clomosy.modules.v2.oscillator-test
+(ns com.ncpenterprises.clomosy.modules.oscillator-test
   (:require [clojure.test :refer :all]
-            [com.ncpenterprises.clomosy.modules.v2.oscillator :as oscillator]))
+            [com.ncpenterprises.clomosy.modules.oscillator :as oscillator]))
 
 (deftest sampled-wave-fn-initial-state-fn-test
   (testing "the oscillator is initialized with phase of 0"

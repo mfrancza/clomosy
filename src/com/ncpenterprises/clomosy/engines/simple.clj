@@ -1,90 +1,67 @@
 (ns com.ncpenterprises.clomosy.engines.simple)
 
-(defn ^:private update-module [module midi-frame inputs dt]
-  "runs the update function for a module and returns the new state"
-  (if (nil? (:update module))
-    module
-    (assoc module :state
-                  ((:update module)
-                    (:state module)
-                    midi-frame
-                    inputs
-                    dt))))
+(defrecord Module
+  [update-fn
+   initial-state-fn
+   input-names
+   output-names])
 
-(defn ^:private update-module-after
-  "runs the update-after function for a module and returns the new state"
-  [module midi-frame inputs dt]
-  (if (nil? (:update-after module))
-    module
-    (assoc module :state
-                  ((:update-after module)
-                    (:state module)
-                    midi-frame
-                    inputs
-                    dt))))
+(defn get-patch
+  "Gets the output patched to the input as [module-id output]"
+  [patches module-id input]
+  (get patches [module-id input]))
 
-
-(defn ^:private get-outputs
-  "Gets the output values for the module for a frame "
-  [outputs module midi-frame inputs dt]
+(defn get-inputs
+  "Gets the input values for a module from the outputs of the other modules based on the patches; if no patch exists for the input, 0.0 is used as the value"
+  [module-id inputs patches outputs]
   (reduce
-    (fn [outputs key]
-      (assoc outputs [(:id module) key] ((get (:outputs module) key) (:state module) midi-frame inputs dt)))
-    outputs
-    (keys (:outputs module))))
+    (fn [inputs input]
+      (let [module-output (get-patch patches module-id input)
+            output (if (not (nil? module-output))
+                     (get-in outputs module-output)
+                     0.0)]
+        (assoc inputs input output)))
+    {}
+    (seq inputs)))
 
-(defn ^:private get-patch
-  "Gets a patch "
-  [patches module_id key]
-  (get patches [module_id key]))
+(defn evaluate-module
+  "Evaluates a module in the synthesizer and returns its outputs and new state"
+  [module-id module patches outputs state]
+  (let [inputs (get-inputs module-id (:input-names module) patches outputs)
+        update-fn (:update-fn module)]
+    (update-fn inputs (module-id state))))
 
-(defn get-inputs [module patches outputs]
-  (let [module_id (:id module)]
-    (reduce
-      (fn [inputs key]
-        (let [output (get-patch patches module_id key)]
-          (assoc inputs key (get outputs output))
-          )
-        )
-      {}
-      (seq (:inputs module))
-      )))
+(defn initial-state [modules]
+  "Initializes the state map based on the :initial-state-fn values of each module"
+  (reduce (fn [state [module-id module]]
+            (let [initial-state-fn (:initial-state-fn module)]
+              (if (not (nil? initial-state-fn))
+                (assoc state module-id (initial-state-fn))
+                state)))
+          {}
+          modules))
 
-(defn evaluate [state
-                patches
-                order
-                midi-frame
-                dt]
-    (reduce (fn [state module_id]
-            (let [
-                  module (module_id (:modules state))
-                  inputs (get-inputs module patches (:outputs state))
-                  module (update-module module midi-frame inputs dt)
-                  outputs (get-outputs (:outputs state) module midi-frame inputs dt)
-                  modules (assoc (:modules state) module_id module)
-                  ]
-              (-> state
-                  (assoc :modules modules)
-                  (assoc :outputs outputs)
-                  )
-              ))
-          state
+(defn evaluate [modules previous-state patches order]
+  "Evaluates a frame of the synthesizer.
+  modules is a map of module-id to Module.
+  previous-state is the value of :state from a previous output or nil
+  patches is a map of [module-id input] to [module-id and output]
+  order is a vector of module-ids in the order they should be evaluated"
+  (reduce (fn [frame module-id]
+            (let [state (:state frame)
+                  outputs (:outputs frame)
+                  module (module-id modules)
+                  module-update (evaluate-module module-id module patches outputs state)
+                  module-state (:state module-update)
+                  module-output (:outputs module-update)
+                  state (if (not (nil? module-state))
+                          (assoc state module-id module-state)
+                          state)
+                  outputs (if (not (nil? module-output))
+                            (assoc outputs module-id module-output)
+                            outputs)]
+              {:state state
+               :outputs outputs}))
+          {:state previous-state
+           :outputs {}}
           order))
-
-(defn update-after [state
-                    patches
-                    order
-                    midi-frame
-                    dt]
-  (reduce (fn [state module_id]
-            (let [module (module_id (:modules state))
-                  inputs (get-inputs module patches (:outputs state))
-                  module (update-module-after module midi-frame inputs dt)
-                  modules (assoc (:modules state) module_id module)
-                  ]
-              (assoc state :modules modules)
-              )
-            )
-          state
-          order))
-

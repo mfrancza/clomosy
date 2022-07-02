@@ -1,6 +1,6 @@
-(ns com.ncpenterprises.clomosy.modules.v2.constant-test
+(ns com.ncpenterprises.clomosy.modules.constant-test
   (:require [clojure.test :refer :all]
-            [com.ncpenterprises.clomosy.modules.v2.constant :as constant]))
+            [com.ncpenterprises.clomosy.modules.constant :as constant]))
 
 (deftest constant-update-fn-test
   (testing "the module outputs the specified value"

@@ -1,16 +1,12 @@
-(ns com.ncpenterprises.clomosy.modules.constant)
+(ns com.ncpenterprises.clomosy.modules.constant
+  (:require [com.ncpenterprises.clomosy.engines.simple :as simple-engine]))
 
-(defn constant [id value]
-  {
+(defn get-constant-update-fn
+  [value]
+  (fn [inputs state] {:outputs {:value value}}))
 
-   :id id
+(defn constant [value]
+  "returns a Module that always outputs the provided value"
+  (simple-engine/map->Module {:update-fn       (get-constant-update-fn value)
+                                 :output-names [:value]}))
 
-   :inputs #{
-             }
-
-   :outputs {
-             :value (fn [state midi-frame inputs dt]
-                      value)
-             }
-   }
-  )

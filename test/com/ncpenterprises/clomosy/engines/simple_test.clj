@@ -1,6 +1,6 @@
-(ns com.ncpenterprises.clomosy.engines.simplev2-test
+(ns com.ncpenterprises.clomosy.engines.simple-test
   (:require [clojure.test :refer :all]
-            [com.ncpenterprises.clomosy.engines.simplev2 :refer :all]))
+            [com.ncpenterprises.clomosy.engines.simple :refer :all]))
 
 (deftest get-patch-test
   (testing "returns [module-id output] mapped to the input or nil if no module is mapped"

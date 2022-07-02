@@ -1,13 +1,8 @@
 (ns com.ncpenterprises.clomosy.core
-  (:require [com.ncpenterprises.clomosy.engines.simplev2 :as engine-v2])
+  (:require [com.ncpenterprises.clomosy.engines.simple :as engine-v2])
   (:gen-class))
 
-
-(defn add-module [modules module-to-add]
-  (assoc modules (:id module-to-add) module-to-add)
-  )
-
-(defn run-synth-v2
+(defn run-synth
   [synth-def frame-rate]
   (println "synth fn" synth-def)
   (println "frame rate" frame-rate)
@@ -27,4 +22,4 @@
         synth-def (requiring-resolve (:synth-def configuration))
         frame-rate (:frame-rate configuration)]
     (when (nil? synth-def) (throw (RuntimeException. (str "No method found for " synth-def))))
-    (run-synth-v2 synth-def frame-rate)))
+    (run-synth synth-def frame-rate)))

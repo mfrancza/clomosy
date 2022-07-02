@@ -1,8 +1,7 @@
-(ns com.ncpenterprises.clomosy.synths.v2.audio-tools
-  (:require [com.ncpenterprises.clomosy.modules.v2.constant :as constant-modules]
-            [com.ncpenterprises.clomosy.modules.v2.oscillator :as oscillator-modules]
-            [com.ncpenterprises.clomosy.modules.v2.mixer :as mixer-modules]
-            [com.ncpenterprises.clomosy.modules.v2.audio :as audio-modules]))
+(ns com.ncpenterprises.clomosy.synths.audio-tools
+  (:require [com.ncpenterprises.clomosy.modules.constant :as constant-modules]
+            [com.ncpenterprises.clomosy.modules.oscillator :as oscillator-modules]
+            [com.ncpenterprises.clomosy.modules.audio :as audio-modules]))
 
 
 (defn test-tone

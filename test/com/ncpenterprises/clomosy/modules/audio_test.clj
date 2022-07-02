@@ -1,8 +1,8 @@
-(ns com.ncpenterprises.clomosy.modules.v2.audio-test
+(ns com.ncpenterprises.clomosy.modules.audio-test
   (:require [clojure.test :refer :all]
             [mockery.core :as mockery]
             [com.ncpenterprises.clomosy.io.audio :as io-audio]
-            [com.ncpenterprises.clomosy.modules.v2.audio :as audio])
+            [com.ncpenterprises.clomosy.modules.audio :as audio])
   (:import (javax.sound.sampled SourceDataLine)))
 
 (deftest initial-state-fn-test

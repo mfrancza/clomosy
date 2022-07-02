@@ -1,6 +1,6 @@
-(ns com.ncpenterprises.clomosy.modules.v2.intontation-test
+(ns com.ncpenterprises.clomosy.modules.intontation-test
   (:require [clojure.test :refer :all]
-            [com.ncpenterprises.clomosy.modules.v2.intonation :as intonation]))
+            [com.ncpenterprises.clomosy.modules.intonation :as intonation]))
 
 (deftest twelve-tone-even-temperament-update-fn-test
   (testing "That A4/MIDI note 69 is 440.00Hz"

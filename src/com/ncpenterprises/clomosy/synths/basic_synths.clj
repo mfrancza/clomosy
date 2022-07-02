@@ -1,9 +1,9 @@
-(ns com.ncpenterprises.clomosy.synths.v2.basic-synths
-  (:require [com.ncpenterprises.clomosy.modules.v2.midi :as midi-modules]
-            [com.ncpenterprises.clomosy.modules.v2.intonation :as intonation-modules]
-            [com.ncpenterprises.clomosy.modules.v2.oscillator :as oscillator-modules]
-            [com.ncpenterprises.clomosy.modules.v2.mixer :as mixer-modules]
-            [com.ncpenterprises.clomosy.modules.v2.audio :as audio-modules]))
+(ns com.ncpenterprises.clomosy.synths.basic-synths
+  (:require [com.ncpenterprises.clomosy.modules.midi :as midi-modules]
+            [com.ncpenterprises.clomosy.modules.intonation :as intonation-modules]
+            [com.ncpenterprises.clomosy.modules.oscillator :as oscillator-modules]
+            [com.ncpenterprises.clomosy.modules.mixer :as mixer-modules]
+            [com.ncpenterprises.clomosy.modules.audio :as audio-modules]))
 
 (defn monophonic-sine-wave
   [frame-rate]

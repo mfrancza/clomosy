@@ -1,7 +1,6 @@
 (ns com.ncpenterprises.clomosy.io.audio-test
   (:require [clojure.test :refer :all]
-            [com.ncpenterprises.clomosy.io.audio :as io-audio])
-  (:import (javax.sound.sampled AudioFormat$Encoding)))
+            [com.ncpenterprises.clomosy.io.audio :as io-audio]))
 
 (deftest map->AudioFormat-test
   (testing "the map is translated to an equivalent AudioFormat"

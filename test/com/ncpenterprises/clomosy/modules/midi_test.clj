@@ -1,6 +1,6 @@
-(ns com.ncpenterprises.clomosy.modules.v2.midi-test
+(ns com.ncpenterprises.clomosy.modules.midi-test
   (:require [clojure.test :refer :all]
-            [com.ncpenterprises.clomosy.modules.v2.midi :as midi-modules]
+            [com.ncpenterprises.clomosy.modules.midi :as midi-modules]
             [com.ncpenterprises.clomosy.io.midi.messages :as midi-messages])
   (:import (javax.sound.midi ShortMessage)))
 
